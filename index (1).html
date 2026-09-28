@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Production Kitting Portal</title>
+<style>
+:root{--bg:#f4f6f8;--card:#fff;--text:#17202a;--muted:#6b7280;--line:#dfe3e8;--dark:#111827;--ok:#e8f7ee;--warn:#fff7dd;--info:#eaf3ff;--danger:#fdecec}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text)}
+header{background:var(--dark);color:white;padding:18px 26px;display:flex;justify-content:space-between;align-items:center}header h1{font-size:20px;margin:0}header small{color:#cbd5e1}
+main{max-width:1250px;margin:24px auto;padding:0 18px}.grid{display:grid;grid-template-columns:1.1fr 1.9fr;gap:18px}.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;box-shadow:0 2px 8px rgba(0,0,0,.04)}h2{font-size:17px;margin:0 0 15px}label{display:block;font-size:12px;font-weight:700;color:#4b5563;margin:13px 0 6px}select,input{width:100%;padding:10px;border:1px solid #cfd5dc;border-radius:8px;background:white}button{border:0;border-radius:8px;padding:10px 13px;font-weight:700;cursor:pointer}button.primary{background:#111827;color:white}button.secondary{background:#e5e7eb;color:#111827}button.success{background:#137a43;color:white}button:disabled{opacity:.45;cursor:not-allowed}.row{display:flex;gap:9px;align-items:center}.row>*{flex:1}.status{display:inline-block;padding:5px 9px;border-radius:999px;font-size:12px;font-weight:700}.not{background:#eee}.kit{background:var(--warn)}.ready{background:var(--info)}.issued{background:var(--ok)}.bar{height:10px;background:#e5e7eb;border-radius:99px;overflow:hidden}.bar>div{height:100%;background:#111827}.meta{font-size:13px;color:var(--muted)}table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;padding:10px;border-bottom:1px solid #e8ebef}th{font-size:11px;text-transform:uppercase;color:#6b7280}.qty{width:70px;padding:7px}.toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.pill{padding:4px 8px;background:#eef0f3;border-radius:6px;font-size:12px}.events{max-height:260px;overflow:auto}.event{border-left:3px solid #d1d5db;padding:7px 10px;margin:7px 0;font-size:12px}.event b{display:block;margin-bottom:3px}.notice{background:#fff7dd;border:1px solid #f0d98c;padding:11px;border-radius:8px;font-size:12px;margin-top:13px}.cards{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:18px}.unit{padding:12px;background:white;border:1px solid var(--line);border-radius:10px;cursor:pointer}.unit.active{border:2px solid #111827}.unit b{font-size:17px}.unit div{font-size:11px;color:var(--muted);margin-top:4px}@media(max-width:850px){.grid{grid-template-columns:1fr}.cards{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<header><div><h1>Warehouse Kitting Portal</h1><small>SYSPRO-connected workflow prototype</small></div><div id="clock"></div></header>
+<main>
+  <div class="cards" id="unitCards"></div>
+  <div class="grid">
+    <section class="card">
+      <h2>1. Start / Manage Kit</h2>
+      <label>Production Unit</label><select id="unitSelect"></select>
+      <label>Operation Group</label><select id="opSelect"></select>
+      <div id="kitSummary" style="margin-top:16px"></div>
+      <div class="row" style="margin-top:15px">
+        <button class="primary" id="createBtn" onclick="createPallet()">Create Pallet / Bin</button>
+        <button class="secondary" onclick="resetDemo()">Reset Demo</button>
+      </div>
+      <div class="notice"><b>Prototype:</b> SYSPRO actions are simulated. Functions named <code>syspro...</code> are the places to connect your real SYSPRO service/API later.</div>
+    </section>
+
+    <section class="card">
+      <div class="toolbar"><h2>2. Pick List</h2><span class="pill" id="activeBin">No pallet created</span></div>
+      <div id="pickArea"><p class="meta">Select a unit and operation group, then create its pallet/bin.</p></div>
+    </section>
+  </div>
+
+  <div class="grid" style="margin-top:18px">
+    <section class="card"><h2>3. Pallet / Bin Status</h2><div id="palletTable"></div></section>
+    <section class="card"><h2>SYSPRO Transaction Log</h2><div class="events" id="events"></div></section>
+  </div>
+</main>
+<script>
+const units=['P41','P42','P43','P44','P45'];
+const ops=[{id:'1-8',label:'Operations 1–8'},{id:'9-16',label:'Operations 9–16'},{id:'17-24',label:'Operations 17–24'},{id:'25-32',label:'Operations 25–32'},{id:'33-40',label:'Operations 33–40'}];
+const baseParts=[
+ {part:'100-1102',desc:'Bracket Assembly',req:4,source:'A-01-04'},
+ {part:'100-2450',desc:'Mounting Plate',req:2,source:'B-03-02'},
+ {part:'220-0188',desc:'Hex Bolt M12',req:16,source:'C-08-01'},
+ {part:'220-0210',desc:'Lock Washer M12',req:16,source:'C-08-03'},
+ {part:'310-4501',desc:'Hose Assembly',req:3,source:'D-02-07'},
+ {part:'410-1015',desc:'Electrical Harness',req:1,source:'E-05-02'}
+];
+let state=JSON.parse(localStorage.getItem('kitting-demo')||'{"kits":{},"events":[],"seq":1001}');
+function key(){return unitSelect.value+'|'+opSelect.value}
+function save(){localStorage.setItem('kitting-demo',JSON.stringify(state))}
+function current(){return state.kits[key()]}
+function init(){
+ unitSelect.innerHTML=units.map(x=>`<option>${x}</option>`).join('');
+ opSelect.innerHTML=ops.map(x=>`<option value="${x.id}">${x.label}</option>`).join('');
+ unitSelect.onchange=render;opSelect.onchange=render;render();setInterval(()=>clock.textContent=new Date().toLocaleString(),1000)
+}
+function createPallet(){
+ if(current()) return;
+ const unit=unitSelect.value,op=opSelect.value;
+ // Replace this mock function with your server-side SYSPRO integration.
+ const bin=sysproCreateBin(unit,op);
+ state.kits[key()]={unit,op,bin,status:'KITTING',parts:baseParts.map(p=>({...p,picked:0})),created:new Date().toISOString()};
+ log('BIN CREATED',`${bin} created for ${unit}, operations ${op}`);
+ save();render();
+}
+function sysproCreateBin(unit,op){
+ // MOCK ONLY. In production your backend should create/validate the bin in SYSPRO.
+ return `${unit}-PAL-${String(state.seq++).padStart(4,'0')}`;
+}
+function updateQty(i,v){const k=current();if(!k)return;k.parts[i].picked=Math.max(0,Math.min(Number(v)||0,k.parts[i].req));k.status=isComplete(k)?'READY':'KITTING';save();render()}
+function transferLine(i){
+ const k=current(),p=k.parts[i]; if(!k||p.picked<=0)return;
+ // MOCK: replace with SYSPRO INVTMB/bin transfer call on your backend.
+ log('BIN TRANSFER',`${p.picked} × ${p.part}: ${p.source} → ${k.bin}`);save();render();
+}
+function isComplete(k){return k.parts.every(p=>p.picked>=p.req)}
+function issueProduction(){
+ const k=current();if(!k||!isComplete(k))return;
+ // MOCK: replace with the appropriate SYSPRO WIP/job issue transaction.
+ k.status='ISSUED';k.issued=new Date().toISOString();
+ log('ISSUE TO PRODUCTION',`${k.bin} issued to ${k.unit} production for operations ${k.op}`);save();render();
+}
+function log(type,msg){state.events.unshift({type,msg,time:new Date().toLocaleString()})}
+function resetDemo(){if(confirm('Reset all prototype data?')){state={kits:{},events:[],seq:1001};save();render()}}
+function render(){
+ const k=current();
+ unitCards.innerHTML=units.map(u=>{const ks=Object.values(state.kits).filter(x=>x.unit===u);const ready=ks.filter(x=>x.status==='READY').length,issued=ks.filter(x=>x.status==='ISSUED').length;return `<div class="unit ${unitSelect.value===u?'active':''}" onclick="unitSelect.value='${u}';render()"><b>${u}</b><div>${ks.length} pallets · ${ready} ready · ${issued} issued</div></div>`}).join('');
+ kitSummary.innerHTML=k?`<div><b>${k.unit} · OP ${k.op}</b></div><div class="meta" style="margin:6px 0">SYSPRO Bin / Pallet: <b>${k.bin}</b></div><span class="status ${k.status==='ISSUED'?'issued':k.status==='READY'?'ready':'kit'}">${k.status}</span>`:`<span class="status not">NOT STARTED</span><p class="meta">No pallet/bin exists for this operation group.</p>`;
+ createBtn.disabled=!!k;activeBin.textContent=k?k.bin:'No pallet created';
+ if(!k){pickArea.innerHTML='<p class="meta">Create a pallet/bin to begin picking.</p>'}else{
+  const pct=Math.round(k.parts.reduce((a,p)=>a+Math.min(p.picked,p.req),0)/k.parts.reduce((a,p)=>a+p.req,0)*100);
+  pickArea.innerHTML=`<div class="meta">Kit completion: <b>${pct}%</b></div><div class="bar" style="margin:7px 0 13px"><div style="width:${pct}%"></div></div><table><thead><tr><th>Part</th><th>Description</th><th>Source Bin</th><th>Req.</th><th>Picked</th><th>Action</th></tr></thead><tbody>${k.parts.map((p,i)=>`<tr><td><b>${p.part}</b></td><td>${p.desc}</td><td>${p.source}</td><td>${p.req}</td><td><input class="qty" type="number" min="0" max="${p.req}" value="${p.picked}" onchange="updateQty(${i},this.value)" ${k.status==='ISSUED'?'disabled':''}></td><td><button class="secondary" onclick="transferLine(${i})" ${p.picked<=0||k.status==='ISSUED'?'disabled':''}>Transfer</button></td></tr>`).join('')}</tbody></table><div style="text-align:right;margin-top:14px"><button class="success" onclick="issueProduction()" ${!isComplete(k)||k.status==='ISSUED'?'disabled':''}>Issue Pallet to Production</button></div>`;
+ }
+ const all=Object.values(state.kits);
+ palletTable.innerHTML=all.length?`<table><thead><tr><th>Unit</th><th>Ops</th><th>Pallet / Bin</th><th>Status</th></tr></thead><tbody>${all.map(x=>`<tr><td><b>${x.unit}</b></td><td>${x.op}</td><td>${x.bin}</td><td><span class="status ${x.status==='ISSUED'?'issued':x.status==='READY'?'ready':'kit'}">${x.status}</span></td></tr>`).join('')}</tbody></table>`:'<p class="meta">No pallets created yet.</p>';
+ events.innerHTML=state.events.length?state.events.map(e=>`<div class="event"><b>${e.type}</b>${e.msg}<div class="meta">${e.time}</div></div>`).join(''):'<p class="meta">No transactions yet.</p>';
+}
+init();
+</script>
+</body>
+</html>
