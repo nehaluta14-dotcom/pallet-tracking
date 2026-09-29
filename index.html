@@ -1,106 +1,167 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Production Kitting Portal</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>QPAC Material Readiness Control</title>
 <style>
-:root{--bg:#f4f6f8;--card:#fff;--text:#17202a;--muted:#6b7280;--line:#dfe3e8;--dark:#111827;--ok:#e8f7ee;--warn:#fff7dd;--info:#eaf3ff;--danger:#fdecec}
-*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text)}
-header{background:var(--dark);color:white;padding:18px 26px;display:flex;justify-content:space-between;align-items:center}header h1{font-size:20px;margin:0}header small{color:#cbd5e1}
-main{max-width:1250px;margin:24px auto;padding:0 18px}.grid{display:grid;grid-template-columns:1.1fr 1.9fr;gap:18px}.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;box-shadow:0 2px 8px rgba(0,0,0,.04)}h2{font-size:17px;margin:0 0 15px}label{display:block;font-size:12px;font-weight:700;color:#4b5563;margin:13px 0 6px}select,input{width:100%;padding:10px;border:1px solid #cfd5dc;border-radius:8px;background:white}button{border:0;border-radius:8px;padding:10px 13px;font-weight:700;cursor:pointer}button.primary{background:#111827;color:white}button.secondary{background:#e5e7eb;color:#111827}button.success{background:#137a43;color:white}button:disabled{opacity:.45;cursor:not-allowed}.row{display:flex;gap:9px;align-items:center}.row>*{flex:1}.status{display:inline-block;padding:5px 9px;border-radius:999px;font-size:12px;font-weight:700}.not{background:#eee}.kit{background:var(--warn)}.ready{background:var(--info)}.issued{background:var(--ok)}.bar{height:10px;background:#e5e7eb;border-radius:99px;overflow:hidden}.bar>div{height:100%;background:#111827}.meta{font-size:13px;color:var(--muted)}table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;padding:10px;border-bottom:1px solid #e8ebef}th{font-size:11px;text-transform:uppercase;color:#6b7280}.qty{width:70px;padding:7px}.toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.pill{padding:4px 8px;background:#eef0f3;border-radius:6px;font-size:12px}.events{max-height:260px;overflow:auto}.event{border-left:3px solid #d1d5db;padding:7px 10px;margin:7px 0;font-size:12px}.event b{display:block;margin-bottom:3px}.notice{background:#fff7dd;border:1px solid #f0d98c;padding:11px;border-radius:8px;font-size:12px;margin-top:13px}.cards{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:18px}.unit{padding:12px;background:white;border:1px solid var(--line);border-radius:10px;cursor:pointer}.unit.active{border:2px solid #111827}.unit b{font-size:17px}.unit div{font-size:11px;color:var(--muted);margin-top:4px}@media(max-width:850px){.grid{grid-template-columns:1fr}.cards{grid-template-columns:repeat(2,1fr)}}
+:root{--navy:#17324d;--blue:#2f6fad;--bg:#f4f7f9;--line:#d5e0e8;--green:#17823b;--yellow:#b77900;--red:#c62828;--muted:#607384}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:var(--bg);color:#1f2d38}
+header{background:var(--navy);color:white;padding:18px 24px;display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap}
+header h1{font-size:22px;margin:0}header .small{color:#dbe7f0}
+nav{background:white;border-bottom:1px solid var(--line);padding:10px 20px;display:flex;gap:8px;flex-wrap:wrap;position:sticky;top:0;z-index:5}
+button{border:1px solid #9fb2c1;background:white;padding:9px 13px;border-radius:7px;cursor:pointer;font-weight:700;color:#243b4e}
+button.primary,.navbtn.active{background:var(--blue);border-color:var(--blue);color:white}button.good{background:var(--green);color:white;border-color:var(--green)}button.warn{background:#fff4cf;border-color:#d5a51c}button:disabled{opacity:.45;cursor:not-allowed}
+main{padding:20px;max-width:1500px;margin:auto}.card{background:white;border:1px solid var(--line);border-radius:10px;margin-bottom:16px;overflow:hidden}.cardhead{padding:14px 16px;background:#edf3f7;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}.cardbody{padding:16px}
+.grid{display:grid;grid-template-columns:repeat(4,minmax(180px,1fr));gap:12px}.metric{background:white;border:1px solid var(--line);border-radius:9px;padding:14px}.metric b{font-size:22px;display:block;color:var(--navy)}.small{font-size:12px;color:var(--muted)}
+table{width:100%;border-collapse:collapse}th,td{border-bottom:1px solid #dce5eb;padding:9px;text-align:left;font-size:13px;vertical-align:top}th{background:#eef3f6;color:#334c60}.redrow{background:#ffe4e4}.greenrow{background:#e8f5ea}.yellowrow{background:#fff5d7}
+.status{display:inline-block;padding:5px 8px;border-radius:13px;font-size:11px;font-weight:700}.green{background:#dff2e3;color:#146a2d}.red{background:#ffdede;color:#a51e1e}.yellow{background:#fff0c1;color:#825900}.gray{background:#e9eef2;color:#536675}.blue{background:#dcecff;color:#225b91}
+.stagebar{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:14px 0}.stage{padding:10px;border-radius:8px;background:#e8eef3;text-align:center;font-size:12px}.stage.done{background:#dff2e3}.stage.now{background:#dcecff;border:2px solid #2f6fad}
+.photoGrid{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.photoGrid img{width:110px;height:80px;object-fit:cover;border-radius:6px;border:1px solid #ccd7df}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}.notice{padding:11px;border-left:4px solid var(--blue);background:#edf5fc;margin-bottom:12px}.deadline{font-weight:700}.dangerText{color:var(--red);font-weight:700}
+input[type=file]{max-width:100%}.hidden{display:none}.toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+@media(max-width:900px){.grid,.two,.stagebar{grid-template-columns:1fr}main{padding:10px}table{display:block;overflow:auto}}
 </style>
 </head>
 <body>
-<header><div><h1>Warehouse Kitting Portal</h1><small>SYSPRO-connected workflow prototype</small></div><div id="clock"></div></header>
-<main>
-  <div class="cards" id="unitCards"></div>
-  <div class="grid">
-    <section class="card">
-      <h2>1. Start / Manage Kit</h2>
-      <label>Production Unit</label><select id="unitSelect"></select>
-      <label>Operation Group</label><select id="opSelect"></select>
-      <div id="kitSummary" style="margin-top:16px"></div>
-      <div class="row" style="margin-top:15px">
-        <button class="primary" id="createBtn" onclick="createPallet()">Create Pallet / Bin</button>
-        <button class="secondary" onclick="resetDemo()">Reset Demo</button>
-      </div>
-      <div class="notice"><b>Prototype:</b> SYSPRO actions are simulated. Functions named <code>syspro...</code> are the places to connect your real SYSPRO service/API later.</div>
-    </section>
-
-    <section class="card">
-      <div class="toolbar"><h2>2. Pick List</h2><span class="pill" id="activeBin">No pallet created</span></div>
-      <div id="pickArea"><p class="meta">Select a unit and operation group, then create its pallet/bin.</p></div>
-    </section>
-  </div>
-
-  <div class="grid" style="margin-top:18px">
-    <section class="card"><h2>3. Pallet / Bin Status</h2><div id="palletTable"></div></section>
-    <section class="card"><h2>SYSPRO Transaction Log</h2><div class="events" id="events"></div></section>
-  </div>
-</main>
+<header><div><h1>QPAC Material Readiness Control</h1><div class="small">Operation-based pallet tracking • SYSPRO quantity visibility • QC • Delivery • Production Control</div></div><div id="clock"></div></header>
+<nav id="nav"></nav>
+<main id="app"></main>
 <script>
-const units=['P41','P42','P43','P44','P45'];
-const ops=[{id:'1-8',label:'Operations 1–8'},{id:'9-16',label:'Operations 9–16'},{id:'17-24',label:'Operations 17–24'},{id:'25-32',label:'Operations 25–32'},{id:'33-40',label:'Operations 33–40'}];
-const baseParts=[
- {part:'100-1102',desc:'Bracket Assembly',req:4,source:'A-01-04'},
- {part:'100-2450',desc:'Mounting Plate',req:2,source:'B-03-02'},
- {part:'220-0188',desc:'Hex Bolt M12',req:16,source:'C-08-01'},
- {part:'220-0210',desc:'Lock Washer M12',req:16,source:'C-08-03'},
- {part:'310-4501',desc:'Hose Assembly',req:3,source:'D-02-07'},
- {part:'410-1015',desc:'Electrical Harness',req:1,source:'E-05-02'}
-];
-let state=JSON.parse(localStorage.getItem('kitting-demo')||'{"kits":{},"events":[],"seq":1001}');
-function key(){return unitSelect.value+'|'+opSelect.value}
-function save(){localStorage.setItem('kitting-demo',JSON.stringify(state))}
-function current(){return state.kits[key()]}
-function init(){
- unitSelect.innerHTML=units.map(x=>`<option>${x}</option>`).join('');
- opSelect.innerHTML=ops.map(x=>`<option value="${x.id}">${x.label}</option>`).join('');
- unitSelect.onchange=render;opSelect.onchange=render;render();setInterval(()=>clock.textContent=new Date().toLocaleString(),1000)
+const KEY='qpac_material_readiness_v3';
+const nowISO=()=>new Date().toISOString();
+const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const fmt=s=>s?new Date(s).toLocaleString():'—';
+const uid=()=>Math.random().toString(36).slice(2)+Date.now().toString(36);
+function demoDB(){
+ let start=new Date(); start.setDate(start.getDate()+4); start.setHours(7,0,0,0);
+ let iso=start.toISOString();
+ const parts=(prefix)=>[
+  {id:uid(),part:prefix+'-1001',desc:'Support Bracket',required:50,kitted:40,qcVerified:0,pcVerified:0},
+  {id:uid(),part:prefix+'-1002',desc:'Mounting Plate',required:20,kitted:20,qcVerified:0,pcVerified:0},
+  {id:uid(),part:prefix+'-1003',desc:'Fastener Kit',required:12,kitted:12,qcVerified:0,pcVerified:0}
+ ];
+ return {units:[{id:'U1',mod:'A',subunit:'P45',productionStart:iso,pallets:[
+  {id:'P1',pallet:'PAL-A-P45-001',bin:'BIN-A-P45-001',operations:'1–3',sysproStatus:'IN PROGRESS',parts:parts('A13'),kitPhotos:[],kitReleased:false,qcReady:false,qcPhotos:[],deliveryPhotos:[],delivered:false,deliveryTime:'',dropLocation:'',pcPhotos:[],pcComplete:false,pcTime:''},
+  {id:'P2',pallet:'PAL-A-P45-002',bin:'BIN-A-P45-002',operations:'4–5',sysproStatus:'STARTED',parts:parts('A45').map((x,i)=>({...x,kitted:i?x.required:8})),kitPhotos:[],kitReleased:false,qcReady:false,qcPhotos:[],deliveryPhotos:[],delivered:false,deliveryTime:'',dropLocation:'',pcPhotos:[],pcComplete:false,pcTime:''}
+ ]},{id:'U2',mod:'B',subunit:'P12',productionStart:new Date(start.getTime()+86400000).toISOString(),pallets:[]}]};
 }
-function createPallet(){
- if(current()) return;
- const unit=unitSelect.value,op=opSelect.value;
- // Replace this mock function with your server-side SYSPRO integration.
- const bin=sysproCreateBin(unit,op);
- state.kits[key()]={unit,op,bin,status:'KITTING',parts:baseParts.map(p=>({...p,picked:0})),created:new Date().toISOString()};
- log('BIN CREATED',`${bin} created for ${unit}, operations ${op}`);
- save();render();
+let db=JSON.parse(localStorage.getItem(KEY)||'null')||demoDB();
+let view='DASH'; let selected=null;
+function save(){localStorage.setItem(KEY,JSON.stringify(db))}
+function deadlines(u){
+ const t0=new Date(u.productionStart), day=86400000;
+ return {t0,t3:new Date(t0-day*3),t2:new Date(t0-day*2),t1:new Date(t0-day),kit72:new Date(t0-72*3600000),kit48:new Date(t0-48*3600000)};
 }
-function sysproCreateBin(unit,op){
- // MOCK ONLY. In production your backend should create/validate the bin in SYSPRO.
- return `${unit}-PAL-${String(state.seq++).padStart(4,'0')}`;
+function shortQty(p,field='kitted'){return Math.max(0,Number(p.required)-Number(p[field]||0))}
+function palletStage(p){
+ if(p.pcComplete)return 'PC VERIFIED';
+ if(p.delivered)return 'DELIVERED TO PRODUCTION';
+ if(p.qcReady)return 'READY FOR DELIVERY';
+ if(p.kitReleased)return 'WAREHOUSE QC';
+ return 'KITTING';
 }
-function updateQty(i,v){const k=current();if(!k)return;k.parts[i].picked=Math.max(0,Math.min(Number(v)||0,k.parts[i].req));k.status=isComplete(k)?'READY':'KITTING';save();render()}
-function transferLine(i){
- const k=current(),p=k.parts[i]; if(!k||p.picked<=0)return;
- // MOCK: replace with SYSPRO INVTMB/bin transfer call on your backend.
- log('BIN TRANSFER',`${p.picked} × ${p.part}: ${p.source} → ${k.bin}`);save();render();
+function badge(p){let s=palletStage(p);return `<span class="status ${s==='PC VERIFIED'?'green':s==='KITTING'?'yellow':'blue'}">${s}</span>`}
+function nav(){
+ const items=[['DASH','Dashboard'],['KIT','1. Kitting Warehouse'],['QC','2. Warehouse QC'],['DEL','3. Deliver to Production'],['PC','4. Production Control'],['SCHED','T-3 / T-2 / T-1 Schedule']];
+ document.getElementById('nav').innerHTML=items.map(x=>`<button class="navbtn ${view===x[0]?'active':''}" onclick="setView('${x[0]}')">${x[1]}</button>`).join('');
 }
-function isComplete(k){return k.parts.every(p=>p.picked>=p.req)}
-function issueProduction(){
- const k=current();if(!k||!isComplete(k))return;
- // MOCK: replace with the appropriate SYSPRO WIP/job issue transaction.
- k.status='ISSUED';k.issued=new Date().toISOString();
- log('ISSUE TO PRODUCTION',`${k.bin} issued to ${k.unit} production for operations ${k.op}`);save();render();
+function setView(v){view=v;selected=null;render()}
+function allPallets(){return db.units.flatMap(u=>u.pallets.map(p=>({u,p})))}
+function render(){nav(); document.getElementById('app').innerHTML= view==='DASH'?dash():view==='SCHED'?schedule():listView(view)}
+function dash(){
+ let ap=allPallets();
+ return `<div class="grid">
+ <div class="metric"><b>${ap.length}</b><span class="small">SYSPRO pallets visible</span></div>
+ <div class="metric"><b>${ap.filter(x=>x.p.kitReleased).length}</b><span class="small">Released to Warehouse QC</span></div>
+ <div class="metric"><b>${ap.filter(x=>x.p.qcReady).length}</b><span class="small">Ready for production delivery</span></div>
+ <div class="metric"><b>${ap.filter(x=>x.p.pcComplete).length}</b><span class="small">PC verified</span></div></div>
+ <div class="card" style="margin-top:16px"><div class="cardhead"><b>Material Readiness</b><button onclick="resetDemo()">Reset Demo Data</button></div><div class="cardbody">
+ <div class="notice"><b>Integration concept:</b> pallet/bin, operation assignment and picker-posted kitted quantity are read from SYSPRO. This GitHub demo simulates those ERP updates locally.</div>
+ ${unitSummary()}</div></div>`;
 }
-function log(type,msg){state.events.unshift({type,msg,time:new Date().toLocaleString()})}
-function resetDemo(){if(confirm('Reset all prototype data?')){state={kits:{},events:[],seq:1001};save();render()}}
-function render(){
- const k=current();
- unitCards.innerHTML=units.map(u=>{const ks=Object.values(state.kits).filter(x=>x.unit===u);const ready=ks.filter(x=>x.status==='READY').length,issued=ks.filter(x=>x.status==='ISSUED').length;return `<div class="unit ${unitSelect.value===u?'active':''}" onclick="unitSelect.value='${u}';render()"><b>${u}</b><div>${ks.length} pallets · ${ready} ready · ${issued} issued</div></div>`}).join('');
- kitSummary.innerHTML=k?`<div><b>${k.unit} · OP ${k.op}</b></div><div class="meta" style="margin:6px 0">SYSPRO Bin / Pallet: <b>${k.bin}</b></div><span class="status ${k.status==='ISSUED'?'issued':k.status==='READY'?'ready':'kit'}">${k.status}</span>`:`<span class="status not">NOT STARTED</span><p class="meta">No pallet/bin exists for this operation group.</p>`;
- createBtn.disabled=!!k;activeBin.textContent=k?k.bin:'No pallet created';
- if(!k){pickArea.innerHTML='<p class="meta">Create a pallet/bin to begin picking.</p>'}else{
-  const pct=Math.round(k.parts.reduce((a,p)=>a+Math.min(p.picked,p.req),0)/k.parts.reduce((a,p)=>a+p.req,0)*100);
-  pickArea.innerHTML=`<div class="meta">Kit completion: <b>${pct}%</b></div><div class="bar" style="margin:7px 0 13px"><div style="width:${pct}%"></div></div><table><thead><tr><th>Part</th><th>Description</th><th>Source Bin</th><th>Req.</th><th>Picked</th><th>Action</th></tr></thead><tbody>${k.parts.map((p,i)=>`<tr><td><b>${p.part}</b></td><td>${p.desc}</td><td>${p.source}</td><td>${p.req}</td><td><input class="qty" type="number" min="0" max="${p.req}" value="${p.picked}" onchange="updateQty(${i},this.value)" ${k.status==='ISSUED'?'disabled':''}></td><td><button class="secondary" onclick="transferLine(${i})" ${p.picked<=0||k.status==='ISSUED'?'disabled':''}>Transfer</button></td></tr>`).join('')}</tbody></table><div style="text-align:right;margin-top:14px"><button class="success" onclick="issueProduction()" ${!isComplete(k)||k.status==='ISSUED'?'disabled':''}>Issue Pallet to Production</button></div>`;
- }
- const all=Object.values(state.kits);
- palletTable.innerHTML=all.length?`<table><thead><tr><th>Unit</th><th>Ops</th><th>Pallet / Bin</th><th>Status</th></tr></thead><tbody>${all.map(x=>`<tr><td><b>${x.unit}</b></td><td>${x.op}</td><td>${x.bin}</td><td><span class="status ${x.status==='ISSUED'?'issued':x.status==='READY'?'ready':'kit'}">${x.status}</span></td></tr>`).join('')}</tbody></table>`:'<p class="meta">No pallets created yet.</p>';
- events.innerHTML=state.events.length?state.events.map(e=>`<div class="event"><b>${e.type}</b>${e.msg}<div class="meta">${e.time}</div></div>`).join(''):'<p class="meta">No transactions yet.</p>';
+function unitSummary(){
+ return db.units.map(u=>{let d=deadlines(u);return `<h3>MOD ${u.mod} / ${u.subunit}</h3><div class="small">Production Start: ${fmt(u.productionStart)} • T-3 Delivery: ${fmt(d.t3)} • T-2 PC Verification: ${fmt(d.t2)} • T-1 Recovery/Backpull: ${fmt(d.t1)}</div>
+ <table><thead><tr><th>Pallet</th><th>Operations</th><th>SYSPRO Status</th><th>Parts</th><th>Short Lines</th><th>Stage</th></tr></thead><tbody>${u.pallets.map(p=>`<tr><td>${p.pallet}</td><td>${p.operations}</td><td>${p.sysproStatus}</td><td>${p.parts.length}</td><td>${p.parts.filter(x=>shortQty(x)>0).length}</td><td>${badge(p)}</td></tr>`).join('')||'<tr><td colspan=6>No pallet records received yet.</td></tr>'}</tbody></table>`}).join('');
 }
-init();
+function listView(kind){
+ const title={KIT:'Kitting Warehouse',QC:'Warehouse QC',DEL:'Deliver to Production Line',PC:'Production Control Verification'}[kind];
+ let eligible=allPallets().filter(({p})=>kind==='KIT'||kind==='QC'&&p.kitReleased||kind==='DEL'&&p.qcReady||kind==='PC'&&p.delivered);
+ if(selected){let x=allPallets().find(z=>z.p.id===selected); if(x)return detail(kind,x.u,x.p)}
+ return `<div class="card"><div class="cardhead"><b>${title}</b>${kind==='KIT'?'<button class="primary" onclick="simulateNewPallet()">Demo: Read New Pallet from SYSPRO</button>':''}</div><div class="cardbody">
+ ${kind==='KIT'?'<div class="notice">Pallets and operation assignments shown here originate in SYSPRO. Picker-posted transactions update the Kitted Qty.</div>':''}
+ <table><thead><tr><th>MOD / Subunit</th><th>Pallet / Bin</th><th>Operations</th><th>Status</th><th>Short Lines</th><th>Action</th></tr></thead><tbody>
+ ${eligible.map(({u,p})=>`<tr><td>${u.mod} / ${u.subunit}</td><td><b>${p.pallet}</b><br><span class="small">${p.bin}</span></td><td>OP ${p.operations}</td><td>${badge(p)}</td><td>${p.parts.filter(x=>shortQty(x,kind==='QC'?'qcVerified':kind==='PC'?'pcVerified':'kitted')>0).length}</td><td><button class="primary" onclick="openPallet('${p.id}')">Open Pallet</button></td></tr>`).join('')||'<tr><td colspan=6>No pallets available at this stage.</td></tr>'}
+ </tbody></table></div></div>`;
+}
+function stagebar(p){
+ let st=palletStage(p), arr=['KITTING','WAREHOUSE QC','READY FOR DELIVERY','DELIVERED TO PRODUCTION','PC VERIFIED'], n=arr.indexOf(st);
+ return `<div class="stagebar">${arr.map((s,i)=>`<div class="stage ${i<n?'done':i===n?'now':''}">${s}</div>`).join('')}</div>`;
+}
+function detail(kind,u,p){
+ let body=kind==='KIT'?kitDetail(u,p):kind==='QC'?qcDetail(u,p):kind==='DEL'?deliveryDetail(u,p):pcDetail(u,p);
+ return `<button onclick="selected=null;render()">← Back to all pallets</button>${stagebar(p)}
+ <div class="card"><div class="cardhead"><div><b>${p.pallet}</b> • ${p.bin} • Operations ${p.operations}</div>${badge(p)}</div><div class="cardbody">${body}</div></div>`;
+}
+function partsTable(p,stage){
+ let vf=stage==='QC'?'qcVerified':stage==='PC'?'pcVerified':'kitted';
+ return `<table><thead><tr><th>Part Number</th><th>Description</th><th>Required Qty</th><th>${stage==='KIT'?'Kitted Qty (SYSPRO)':stage==='QC'?'Kitted Qty':'Delivered Qty'}</th>${stage!=='KIT'?'<th>Verified Qty</th>':''}<th>Shortage Qty</th></tr></thead><tbody>
+ ${p.parts.map(x=>{let base=stage==='PC'?x.qcVerified||x.kitted:x.kitted, verified=x[vf]||0, sh=stage==='KIT'?shortQty(x):Math.max(0,base-verified);return `<tr class="${sh>0?'redrow':verified>=base&&stage!=='KIT'?'greenrow':''}"><td><b>${x.part}</b></td><td>${x.desc}</td><td>${x.required}</td><td>${stage==='KIT'?x.kitted:base}</td>${stage!=='KIT'?`<td>${verified}</td>`:''}<td class="${sh?'dangerText':''}">${sh}</td></tr>`}).join('')}</tbody></table>`;
+}
+function kitDetail(u,p){
+ return `<div class="notice"><b>Picker workflow:</b> Pick operation-wise in SYSPRO → post transaction → Kitted Qty updates here. When pallet is complete, upload pallet photo and deliver it to Warehouse QC.</div>
+ ${partsTable(p,'KIT')}<br>
+ <div class="toolbar"><button onclick="simulateSysproQty('${p.id}')">Demo: Simulate Picker Posting to SYSPRO</button><label><b>Kitted pallet photo(s):</b> <input type="file" accept="image/*" multiple onchange="addPhotos('${p.id}','kitPhotos',this)"></label></div>
+ ${photos(p.kitPhotos)}
+ <br><button class="good" ${p.kitPhotos.length?'':'disabled'} onclick="releaseQC('${p.id}')">${p.kitReleased?'Delivered to Warehouse QC ✓':'Deliver Pallet to Warehouse QC'}</button>
+ <div class="small">Photo is required in this demo before release to QC.</div>`;
+}
+function qcDetail(u,p){
+ return `<div class="notice">Scan each part barcode and verify quantity. The demo buttons below simulate scanner results being reflected on this screen.</div>
+ ${partsTable(p,'QC')}<br><div class="toolbar">
+ <button onclick="verifyAll('${p.id}','qcVerified')">Demo: Scan & Verify All to Kitted Qty</button>
+ <button onclick="makeDiscrepancy('${p.id}','qcVerified')">Demo: Create 1 Qty Discrepancy</button>
+ <label>QC photo(s): <input type="file" accept="image/*" multiple onchange="addPhotos('${p.id}','qcPhotos',this)"></label></div>${photos(p.qcPhotos)}
+ <br><button class="good" onclick="readyDelivery('${p.id}')">${p.qcReady?'READY FOR DELIVERY ✓':'Mark Ready for Delivery to Production'}</button>`;
+}
+function deliveryDetail(u,p){
+ return `<div class="notice">Deliver this pallet physically to the production line. Upload a photo showing where it was dropped, enter the drop location, then confirm delivery.</div>
+ <div class="two"><div><b>Pallet</b><br>${p.pallet}<br><span class="small">OP ${p.operations}</span></div><div><label><b>Drop Location</b><br><input id="drop" value="${esc(p.dropLocation)}" placeholder="Example: MOD A / Station 3" style="padding:9px;width:100%"></label></div></div><br>
+ <label><b>Delivery photo(s):</b> <input type="file" accept="image/*" multiple onchange="addPhotos('${p.id}','deliveryPhotos',this)"></label>${photos(p.deliveryPhotos)}
+ <br><button class="good" ${p.deliveryPhotos.length?'':'disabled'} onclick="confirmDelivery('${p.id}')">${p.delivered?'DELIVERED ✓':'Confirm Delivered to Production Line'}</button>
+ ${p.delivered?`<div class="small">Delivered ${fmt(p.deliveryTime)} • ${esc(p.dropLocation)}</div>`:''}`;
+}
+function pcDetail(u,p){
+ return `<div class="notice"><b>Drop location:</b> ${esc(p.dropLocation||'Not recorded')} &nbsp; • &nbsp; <b>Delivery time:</b> ${fmt(p.deliveryTime)}<br>Production Control verifies the pallet again. Any difference between delivered quantity and PC verified quantity appears as a shortage and turns red.</div>
+ ${partsTable(p,'PC')}<br><div class="toolbar">
+ <button onclick="verifyAll('${p.id}','pcVerified')">Demo: Scan & Verify All Delivered Qty</button>
+ <button onclick="makeDiscrepancy('${p.id}','pcVerified')">Demo: Create 1 Qty Discrepancy</button>
+ <label>PC verification photo(s): <input type="file" accept="image/*" multiple onchange="addPhotos('${p.id}','pcPhotos',this)"></label></div>${photos(p.pcPhotos)}
+ <br><button class="good" onclick="completePC('${p.id}')">${p.pcComplete?'PC VERIFIED ✓':'Complete Production Control Verification'}</button>`;
+}
+function schedule(){
+ return `<div class="card"><div class="cardhead"><b>Material Readiness Timing</b></div><div class="cardbody">
+ <div class="notice"><b>Timing logic:</b> Kitting starts approximately 72–48 hours before the applicable material-delivery need. T-3 = delivery deadline, T-2 = Production Control verification deadline, T-1 = shortage recovery/backpull deadline, T-0 = production start.</div>
+ <table><thead><tr><th>MOD / Subunit</th><th>Kitting Window</th><th>T-3 Delivery</th><th>T-2 PC Verification</th><th>T-1 Recovery / Backpull</th><th>T-0 Production Start</th></tr></thead><tbody>
+ ${db.units.map(u=>{let d=deadlines(u);return `<tr><td><b>${u.mod} / ${u.subunit}</b></td><td>${fmt(d.kit72)}<br>to ${fmt(d.kit48)}</td><td>${fmt(d.t3)}</td><td>${fmt(d.t2)}</td><td>${fmt(d.t1)}</td><td>${fmt(d.t0)}</td></tr>`}).join('')}
+ </tbody></table></div></div>`;
+}
+function getP(id){for(let u of db.units){let p=u.pallets.find(x=>x.id===id);if(p)return {u,p}}}
+function openPallet(id){selected=id;render()}
+function simulateSysproQty(id){let {p}=getP(id);let x=p.parts.find(x=>x.kitted<x.required);if(x)x.kitted=Math.min(x.required,x.kitted+5);p.sysproStatus=p.parts.every(x=>x.kitted>=x.required)?'POSTED / COMPLETE':'IN PROGRESS';save();render()}
+function addPhotos(id,field,input){let {p}=getP(id),files=[...(input.files||[])];files.slice(0,6).forEach(f=>{let r=new FileReader();r.onload=()=>{p[field].push({name:f.name,data:r.result});save();render()};r.readAsDataURL(f)})}
+function photos(a){return a&&a.length?`<div class="photoGrid">${a.map(x=>`<div><img src="${x.data}" alt="${esc(x.name)}"><div class="small">${esc(x.name)}</div></div>`).join('')}</div>`:'<div class="small">No photos uploaded.</div>'}
+function releaseQC(id){let {p}=getP(id);if(!p.kitPhotos.length)return alert('Upload a pallet photo first.');p.kitReleased=true;save();render()}
+function verifyAll(id,field){let {p}=getP(id);p.parts.forEach(x=>x[field]=field==='pcVerified'?(x.qcVerified||x.kitted):x.kitted);save();render()}
+function makeDiscrepancy(id,field){let {p}=getP(id),x=p.parts[0],base=field==='pcVerified'?(x.qcVerified||x.kitted):x.kitted;x[field]=Math.max(0,base-1);save();render()}
+function readyDelivery(id){let {p}=getP(id);p.qcReady=true;save();render()}
+function confirmDelivery(id){let {p}=getP(id);if(!p.deliveryPhotos.length)return alert('Upload delivery photo first.');let d=document.getElementById('drop');if(!d.value.trim())return alert('Enter drop location.');p.dropLocation=d.value.trim();p.delivered=true;p.deliveryTime=nowISO();save();render()}
+function completePC(id){let {p}=getP(id);p.pcComplete=true;p.pcTime=nowISO();save();render()}
+function simulateNewPallet(){let u=db.units[0],n=u.pallets.length+1,seq=String(n).padStart(3,'0'),op=n===3?'6–8':String(n);
+ u.pallets.push({id:uid(),pallet:`PAL-${u.mod}-${u.subunit}-${seq}`,bin:`BIN-${u.mod}-${u.subunit}-${seq}`,operations:op,sysproStatus:'STARTED',parts:[
+ {id:uid(),part:`A${n}-2001`,desc:'Frame Component',required:16,kitted:0,qcVerified:0,pcVerified:0},
+ {id:uid(),part:`A${n}-2002`,desc:'Hardware Set',required:8,kitted:0,qcVerified:0,pcVerified:0}],kitPhotos:[],kitReleased:false,qcReady:false,qcPhotos:[],deliveryPhotos:[],delivered:false,deliveryTime:'',dropLocation:'',pcPhotos:[],pcComplete:false,pcTime:''});save();render()}
+function resetDemo(){if(confirm('Reset all demo data?')){db=demoDB();save();render()}}
+setInterval(()=>document.getElementById('clock').textContent=new Date().toLocaleString(),1000);render();
 </script>
-</body>
-</html>
+</body></html>
